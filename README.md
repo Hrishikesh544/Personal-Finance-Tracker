@@ -58,7 +58,7 @@ A clean directory structure is maintained to ensure modularity and ease of deplo
 
 ```text
 financial-intelligence/
-├── app.py              # Main Streamlit application & UI logic
+├── finance_tracker.py  # Main Streamlit application & UI logic
 ├── finance_master.csv  # Auto-generated database (Data Persistence Layer)
 ├── requirements.txt    # Python dependencies for environment setup
 ├── .gitignore          # Prevents temporary files from being tracked
