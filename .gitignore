@@ -1,0 +1,19 @@
+# Ignore the specific data file containing personal financial records
+finance_master.csv
+
+# Ignore Python cache folders and temporary files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ignore Streamlit's local configuration and state
+.streamlit/
+
+# Ignore virtual environments (if you create them later)
+venv/
+env/
+.env/
+
+# Ignore OS-specific system files
+.DS_Store
+Thumbs.db
