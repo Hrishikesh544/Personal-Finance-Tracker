@@ -50,4 +50,16 @@ Ensure you have Python installed, then follow these steps:
 3. **Run the application:**
    ```bash
    streamlit run app.py
-  ```
+   ```
+
+##  Project Structure
+
+A clean directory structure is maintained to ensure modularity and ease of deployment:
+
+```text
+financial-intelligence/
+├── app.py              # Main Streamlit application & UI logic
+├── finance_master.csv  # Auto-generated database (Data Persistence Layer)
+├── requirements.txt    # Python dependencies for environment setup
+├── .gitignore          # Prevents temporary files from being tracked
+└── README.md           # Project documentation and roadmap
