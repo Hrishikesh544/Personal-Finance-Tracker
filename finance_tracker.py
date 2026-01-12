@@ -13,15 +13,37 @@ st.set_page_config(page_title="Personal Finance Tracker", layout="wide")
 DATA_FILE = "finance_master.csv"
 
 def load_data():
+    # 1. Initialize empty DataFrame with correct columns
+    columns = ['ID', 'Date', 'Account', 'Category', 'Description', 'Amount', 'Type', 'Is_Recurring']
+    
     if os.path.exists(DATA_FILE):
         df = pd.read_csv(DATA_FILE)
         df['Date'] = pd.to_datetime(df['Date'])
-        return df
-    return pd.DataFrame(columns=['ID', 'Date', 'Account', 'Category', 'Description', 'Amount', 'Type', 'Is_Recurring'])
+    else:
+        df = pd.DataFrame(columns=columns)
+
+    # 2. Sample Data Logic (Professional Demo Mode)
+    if df.empty:
+        st.info("👋 Welcome! Your database is currently empty.")
+        if st.button("✨ Load Sample Data for Demo"):
+            sample_data = [
+                {"ID": 1, "Date": "2026-01-01", "Account": "Bank Account", "Category": "Salary", "Description": "Monthly Pay", "Amount": 50000.0, "Type": "Income", "Is_Recurring": True},
+                {"ID": 2, "Date": "2026-01-05", "Account": "Bank Account", "Category": "Rent", "Description": "Apartment Rent", "Amount": 15000.0, "Type": "Expense", "Is_Recurring": True},
+                {"ID": 3, "Date": "2026-01-10", "Account": "Credit Card", "Category": "Food", "Description": "Restaurant Dinner", "Amount": 1200.0, "Type": "Expense", "Is_Recurring": False},
+                {"ID": 4, "Date": "2026-01-12", "Account": "Cash", "Category": "Travel", "Description": "Fuel Refill", "Amount": 2000.0, "Type": "Expense", "Is_Recurring": False},
+                {"ID": 5, "Date": "2026-01-15", "Account": "Digital Wallet", "Category": "Shopping", "Description": "Electronics", "Amount": 5000.0, "Type": "Expense", "Is_Recurring": False}
+            ]
+            df = pd.DataFrame(sample_data)
+            df['Date'] = pd.to_datetime(df['Date'])
+            save_data(df)
+            st.rerun()
+            
+    return df
 
 def save_data(df):
     df.to_csv(DATA_FILE, index=False)
 
+# Initialize Data
 df = load_data()
 
 # --- SIDEBAR: INPUT & CONTROLS ---
@@ -46,7 +68,7 @@ if submit and amount > 0:
     st.sidebar.success("Transaction Logged!")
     st.rerun()
 
-# --- NEW: DELETE & ACCOUNT MANAGEMENT ---
+# --- DATA MANAGEMENT ---
 st.sidebar.markdown("---")
 st.sidebar.header("⚙️ Data Management")
 
@@ -80,9 +102,9 @@ if st.sidebar.button("🔥 Factory Reset (Delete All)"):
 st.title("📊 Financial Intelligence Dashboard")
 
 if df.empty:
-    st.info("No data found. Start logging transactions in the sidebar.")
+    st.info("No data found. Start logging transactions in the sidebar or load sample data.")
 else:
-    # A. KEY METRICS (UPDATED WITH ARROWS)
+    # A. KEY METRICS
     curr_month = datetime.date.today().month
     last_month = curr_month - 1 if curr_month > 1 else 12
     
@@ -90,33 +112,24 @@ else:
     m_df = display_df[display_df['Date'].dt.month == curr_month]
     last_m_df = display_df[display_df['Date'].dt.month == last_month]
     
-    # Calculate Current Totals
     total_income = m_df[m_df['Type'] == 'Income']['Amount'].sum()
     total_expense = m_df[m_df['Type'] == 'Expense']['Amount'].sum()
 
-    # Calculate Last Month Totals
     last_income = last_m_df[last_m_df['Type'] == 'Income']['Amount'].sum()
     last_expense = last_m_df[last_m_df['Type'] == 'Expense']['Amount'].sum()
 
-    # Calculate Differences (Deltas)
     income_delta = total_income - last_income
     expense_delta = total_expense - last_expense
     
     col1, col2, col3 = st.columns(3)
-    
-    # Income: Normal Color (Green = Up, Red = Down)
-    col1.metric("Selected Account Income", f"₹{total_income:,.0f}", delta=f"{income_delta:,.0f}", delta_color="normal")
-    
-    # Expense: Inverse Color (Red = Up, Green = Down)
-    col2.metric("Selected Account Expense", f"₹{total_expense:,.0f}", delta=f"{expense_delta:,.0f}", delta_color="inverse")
-    
+    col1.metric("Current Month Income", f"₹{total_income:,.0f}", delta=f"{income_delta:,.0f}", delta_color="normal")
+    col2.metric("Current Month Expense", f"₹{total_expense:,.0f}", delta=f"{expense_delta:,.0f}", delta_color="inverse")
     col3.metric("Net Surplus", f"₹{(total_income - total_expense):,.0f}")
 
-    # B. MULTI-ACCOUNT VIEW (Visual)
+    # B. MULTI-ACCOUNT VIEW
     st.markdown("---")
     st.subheader("🏦 Consolidated Bank & Wallet Balances")
     
-    # Calculate balance per account: Income - Expense
     acc_logic = display_df.copy()
     acc_logic['Math_Amount'] = np.where(acc_logic['Type'] == 'Income', acc_logic['Amount'], -acc_logic['Amount'])
     balance_df = acc_logic.groupby('Account')['Math_Amount'].sum().reset_index()
@@ -126,7 +139,7 @@ else:
                      labels={'Math_Amount': 'Current Balance (₹)'})
     st.plotly_chart(fig_acc, use_container_width=True)
 
-    # C. RECENT LOGS (With ID for Deletion)
+    # C. RECENT LOGS
     st.markdown("---")
     st.subheader("📑 Transaction Logs")
     st.write("Reference the **ID** column to manually delete a record in the sidebar.")
